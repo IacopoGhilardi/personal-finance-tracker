@@ -22,10 +22,7 @@ export async function getUserToken(req: Request, res: Response) {
 
 export async function getInstitutions(req: Request, res: Response) {
     let access_token = utility.getTokenFromBearer(req.headers.authorization)
-    let response = await nordigenServices.getInstitutions(access_token);  
-    
-    console.log('Response', response);
-    
+    let response = await nordigenServices.getInstitutions(access_token);      
 
     if (response.status == 200) {
         return res.status(200).json({
