@@ -8,7 +8,8 @@ export default {
     },
     "log_level": "info",
     "nordigen": {
-        "secret_key": "2e68137556bbf855bc2f6c23598bf3018d6dd6af9f895e8039e4fe861973caea7bdbae15c35ed8c0a4e0a576a2a82c3116aa5c18b3f4e861c0b9423e8454d08b",
-        "secret_id": "8d379653-31bb-4d9c-8b9d-bf6140013442"
+        "secret_key": "b6cc0bd09ab7d24151aa862f07f492fad662a6546f3b98b7fb37f60283fcff75b5b1cfa70e293af7d3b7eff39efa58099e02b6596ad01737bd44984f0f092649",
+        "secret_id": "64322411-82bb-4a04-bdf5-50932e08e7da",
+        "base_url": "https://bankaccountdata.gocardless.com/api/v2"
     }
 }

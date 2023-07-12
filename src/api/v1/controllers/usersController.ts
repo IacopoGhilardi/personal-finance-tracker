@@ -1,27 +1,41 @@
 import { Request, Response } from "express";
 import logger from "../../../utils/logger";
+import * as utility from '../../../utils/utility'
 import * as nordigenServices from '../services/nordigen';
 
 
 export async function getUserToken(req: Request, res: Response) {
     let tokenResponse = await nordigenServices.getToken();
 
-    res.send(tokenResponse);
+    if (tokenResponse.status == 200) {
+        return res.status(200).json({
+            'status': "OK",
+            'data': tokenResponse.data
+        })
+    }
+    
+    return res.status(400).json({
+        'status': "KO",
+        'data': tokenResponse.data.error
+    })
 }
 
 export async function getInstitutions(req: Request, res: Response) {
-    try {
-        let response = await nordigenServices.getInstitutions();        
+    let access_token = utility.getTokenFromBearer(req.headers.authorization)
+    let response = await nordigenServices.getInstitutions(access_token);  
+    
+    console.log('Response', response);
+    
 
+    if (response.status == 200) {
         return res.status(200).json({
+            'status': 'OK',
             'data': response.data
         });
-
-    } catch (error) {
-        console.log('Error', error);
-        
-        return res.status(400).json({
-            'error': error
-        });
     }
+
+    return res.status(400).json({
+        'status': 'KO',
+        'error': response.data.error
+    }); 
 }

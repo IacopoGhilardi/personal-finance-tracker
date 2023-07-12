@@ -193,6 +193,6 @@ dist
 .history
 .ionide
 
-src/config/default
+src/config/default.ts
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,macos,node
