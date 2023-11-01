@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import logger from "../../../utils/logger";
 import * as utility from '../../../utils/utility'
-import * as nordigenServices from '../services/nordigen';
+import * as nordigenServices from '../services/nordigenService';
 
 
 export async function getUserToken(req: Request, res: Response) {

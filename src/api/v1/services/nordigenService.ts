@@ -24,15 +24,15 @@ export async function getInstitutions(access_token: string): Promise<any> {
     return response;
 }
 
-export async function createUserAgreement(access_token: string): Promise<any> {
+export async function createUserAgreement(access_token: string, institution: object): Promise<any> {
     let response = await axios.post(`${config.get('nordigen.base_url')}/agreements/enduser`, {
         headers: {
             "accept": "application/json",
             "Authorization": `Bearer ${access_token}`
         },
-        institution_id: "REVOLUT_REVOGB21",
-        max_historical_days: "180",
-        access_valid_for_days: "30",
+        institution_id: institution["id"],
+        max_historical_days: institution["max_historical_days"],
+        access_valid_for_days: institution["access_valid_for_days"],
         access_scope: ["balances", "details", "transactions"] 
     })
 
