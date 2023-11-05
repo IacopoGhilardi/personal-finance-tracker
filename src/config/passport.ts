@@ -40,10 +40,14 @@ passport.use(
   new JWTStrategy(
     {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: config.get("host.auth_secret"),
+      secretOrKey: config.get("auth.secret"),
     },
     async (payload, done) => {
       try {
+        if (payload.exp && Date.now() >= payload.exp * 1000) {
+          return done(null, false, { message: 'Token has expired' });
+        }
+
         const user = await User.findById(payload.id);
         if (!user) {
           return done(null, false);

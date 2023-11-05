@@ -2,7 +2,10 @@ export default {
     "host": {
         "port": "3000",
         "api_version": "1",
-        "auth_secret": "TnC0ohoUU6KGNaDngOVPaabSIsQaYZ6e"
+    },
+    "auth": {
+        "secret": "TnC0ohoUU6KGNaDngOVPaabSIsQaYZ6e",
+        "expiration_time": '12h'
     },
     "mongodb": {
         "uri": "mongodb://localhost:27017/mynance"

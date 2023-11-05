@@ -5,7 +5,7 @@ import logger from "../utils/logger";
 let client = null;
 let retries  = 3;
 
-export async function initConnection(retry) {
+export async function initConnection(retry: number) {
     try {
         logger.info("Connecting to db")
         client = await mongoose.connect(config.get("mongodb.uri"))
@@ -22,4 +22,11 @@ export async function initConnection(retry) {
 
 export function getClient(): MongoClient {
     return client;
+}
+
+export function closeConneciton(): void {
+    const mongoClient = getClient();
+    mongoClient.close();
+
+    return
 }

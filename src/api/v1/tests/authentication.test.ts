@@ -1,61 +1,62 @@
-import request from 'supertest';
-import express from 'express';
-import mongoose from 'mongoose';
-import { Express } from 'express';
-import { Response } from 'express-serve-static-core';
-import app from '../routes'; // Your Express app
-import { login, register } from '../controllers/authController'; // Import your controller functions
-import User from '../models/user';
+import { closeConneciton, initConnection } from "../../../config/database";
+import * as server from "../../../config/server";
+import { request } from 'supertest';
+import User from "../models/user";
 
-describe('Authentication Routes', () => {
-  let testApp: Express;
 
-  beforeAll(async () => {
-    await mongoose.connect('mongodb://localhost/testDB');
-    testApp = express();
-    testApp.use(express.json());
-    testApp.use('/register', register);
-    testApp.use('/login', login);
-  });
+beforeAll(async () => {
+  await initConnection(1);
+  server.initServer();
+});
 
-  beforeEach(async () => {
-    await User.deleteMany({});
-  });
 
-  afterAll(async () => {
-    await mongoose.connection.close();
-  });
+describe("Test authentication routes", () => {
 
-  it('should register a new user', async () => {
-    const newUser = {
-      email: 'johndoe@example.com',
-      password: 'securepassword',
-    };
+  //Register
+  test("it should register new user", async () => {
 
-    const response = await request(testApp)
-      .post('/register')
-      .send(newUser)
-      .expect(200);
-
-    expect(response.body.message).toBe('User registered successfully');
-  });
-
-  it('should login a registered user', async () => {
-    const userToLogin = {
-      email: 'johndoe@example.com',
-      password: 'securepassword',
-    };
-
-    await User.create({
-      email: 'johndoe@example.com',
-      password: 'hashedpassword',
+    const newUser = new User({
+      email: "test@test.com",
+      password: "changeMe!"
     });
 
-    const response = await request(testApp)
-      .post('/login')
-      .send(userToLogin)
+    const registerResponse = await request(server.getServer())
+    .post('/api/v1/users/register')
+    .send(newUser)
+    .expect(200)
+
+    expect(registerResponse.status).toBe("OK")
+
+    //On the second should be already registered
+    const secondRegisterResponse = await request(server.getServer())
+    .post('/api/v1/users/register')
+    .send(newUser)
+    .expect(200)
+
+    expect(secondRegisterResponse.status).toBe("KO")
+  });
+
+
+  //Login
+  test("it should login the registered user", async () => {
+    const userCredentials = {
+      email: "test@test.com",
+      password: "changeMe!"
+    };
+
+    const loginResponse = await request(server.getServer())
+      .post('/api/v1/login')
+      .send(userCredentials)
       .expect(200);
 
-    expect(response.body.token).toBeDefined();
+      expect(loginResponse.status).toBe("OK")
+      expect(loginResponse.token).not.toBe(null)
   });
+
+});
+
+
+afterAll(() => {
+  closeConneciton();
+  server.closeServerConnection();
 });
