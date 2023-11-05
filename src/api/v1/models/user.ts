@@ -1,4 +1,5 @@
 import { Schema, model, Types } from 'mongoose';
+import bcrypt from 'bcrypt';
 
 // 1. Create an interface representing a document in MongoDB.
 interface User {
@@ -34,6 +35,34 @@ const userSchema = new Schema<User>({
 	accounts: Array
 });
 
-const User = model<User>('User', userSchema);
+interface UserDocument extends Document, User {
+	comparePassword(candidatePassword: string): Promise<boolean>;
+  }
+
+userSchema.pre('save', async function (next) {
+	const user = this;
+	if (user.isModified('password')) {
+	  try {
+		const hashedPassword = await bcrypt.hash(user.password, 10); // 10 is the number of salt rounds
+		user.password = hashedPassword;
+	  } catch (error) {
+		return next(error);
+	  }
+	}
+	next();
+  });
+
+
+userSchema.methods.comparePassword = async function (candidatePassword: string) {
+	const user = this;
+	try {
+	  const isMatch = await bcrypt.compare(candidatePassword, user.password);
+	  return isMatch;
+	} catch (error) {
+	  throw error;
+	}
+  };
+
+const User = model<UserDocument>('User', userSchema);
 
 export default User

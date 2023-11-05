@@ -23,7 +23,6 @@ Once you have Docker installed, follow these steps to set up and run the project
     ```bash
    cd personal-finance-tracker
 
-
 2. You can run the project using the following command:
 
    ```bash

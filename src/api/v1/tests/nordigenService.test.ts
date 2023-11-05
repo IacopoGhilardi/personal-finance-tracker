@@ -1,4 +1,4 @@
-import { getToken } from "./nordigenService";
+import { getToken } from "../services/nordigenService";
 
 test('Get token', async () => {
     const tokenResponse = await getToken();    
