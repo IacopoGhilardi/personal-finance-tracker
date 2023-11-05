@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/main.js",
   "scripts": {
-    "test": "docker-compose build && docker-compose up -d && jest",
+    "test": "docker-compose down && docker-compose build && docker-compose up -d && jest",
     "dev:start": "docker-compose down && docker-compose build && docker-compose up -d && nodemon src/main.ts",
     "dev:stop": "docker-compose down",
     "dev": "nodemon src/main.ts",

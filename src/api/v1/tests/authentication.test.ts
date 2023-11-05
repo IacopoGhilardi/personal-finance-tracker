@@ -1,25 +1,41 @@
 import request from 'supertest';
 import express from 'express';
+import mongoose from 'mongoose';
+import { Express } from 'express';
+import { Response } from 'express-serve-static-core';
+import app from '../routes'; // Your Express app
+import { login, register } from '../controllers/authController'; // Import your controller functions
 import User from '../models/user';
-import app from '../routes';
 
 describe('Authentication Routes', () => {
+  let testApp: Express;
+
+  beforeAll(async () => {
+    await mongoose.connect('mongodb://localhost/testDB');
+    testApp = express();
+    testApp.use(express.json());
+    testApp.use('/register', register);
+    testApp.use('/login', login);
+  });
+
   beforeEach(async () => {
     await User.deleteMany({});
   });
 
+  afterAll(async () => {
+    await mongoose.connection.close();
+  });
+
   it('should register a new user', async () => {
     const newUser = {
-      name: 'John',
-      surname: 'Doe',
       email: 'johndoe@example.com',
       password: 'securepassword',
     };
 
-    const response = await request(app)
+    const response = await request(testApp)
       .post('/register')
       .send(newUser)
-      .expect(200); 
+      .expect(200);
 
     expect(response.body.message).toBe('User registered successfully');
   });
@@ -31,18 +47,15 @@ describe('Authentication Routes', () => {
     };
 
     await User.create({
-      name: 'John',
-      surname: 'Doe',
       email: 'johndoe@example.com',
       password: 'hashedpassword',
     });
 
-    const response = await request(app)
+    const response = await request(testApp)
       .post('/login')
       .send(userToLogin)
       .expect(200);
 
-    
     expect(response.body.token).toBeDefined();
   });
 });
