@@ -3,6 +3,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as JWTStrategy, ExtractJwt } from 'passport-jwt';
 import User from '../api/v1/models/user';
 import config from 'config';
+import {decryptReversibleUuid, getDataFromToken} from "../utils/tokenUtils";
 
 
 passport.use(
@@ -48,7 +49,8 @@ passport.use(
           return done(null, false, { message: 'Token has expired' });
         }
 
-        const user = await User.findById(payload.id);
+        let decryptedId: string = decryptReversibleUuid(payload.uuid)
+        const user = await User.findById(decryptedId);
         if (!user) {
           return done(null, false);
         }

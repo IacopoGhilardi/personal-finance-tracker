@@ -1,11 +1,13 @@
 import User from "../models/user";
-import express, { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import passport from "../../../config/passport";
 import jwt from 'jsonwebtoken';
 import config from 'config'
+import {makeErrorResponse} from "../../../utils/utility";
+import {encryptResourceId} from "../../../utils/tokenUtils";
 
-export async function login(req: Request, res: Response, next: NextFunction) {
-    passport.authenticate('local', { session: false }, (err, user) => {
+export async function login(req: Request, res: Response, next: NextFunction): Promise<void> {
+    passport.authenticate('local', { session: false }, (err: any, user: any) => {
         if (err || !user) {
           return res.status(401).json({
             status: 'KO',
@@ -15,16 +17,17 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     
         req.login(user, { session: false }, async (loginErr) => {
           if (loginErr) {
-            return res.status(500).json({
-              status: 'KO',
-              error: 'Login failed' 
-            });
+            return makeErrorResponse(res, 500, "Login failed");
           }
-    
-          const token = jwt.sign({ id: user.id }, config.get('auth.secret'), { expiresIn: config.get('auth.expiration_time') });
+
+          const token: object = {
+              uuid: encryptResourceId(user.id)
+          }
+
+          const jwtToken: string = jwt.sign(token, config.get('auth.secret'), { expiresIn: config.get('auth.expiration_time') });
           return res.json({
             status: 'OK',
-            token: token 
+            token: jwtToken
           });
         });
       })(req, res, next);

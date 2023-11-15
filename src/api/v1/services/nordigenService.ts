@@ -1,6 +1,7 @@
 import config from 'config';
 import axios, { AxiosResponse } from 'axios'
 import { response } from 'express';
+import {JwtFromRequestFunction} from "passport-jwt";
 
 export async function getToken(): Promise<AxiosResponse<any, any>> {
     
@@ -12,7 +13,7 @@ export async function getToken(): Promise<AxiosResponse<any, any>> {
     return response;
 }
 
-export async function getInstitutions(access_token: string): Promise<any> {
+export async function getInstitutions(access_token: JwtFromRequestFunction): Promise<any> {
     
     let response = await axios.get(`${config.get('nordigen.base_url')}/institutions/?country=it`, {
         headers: {

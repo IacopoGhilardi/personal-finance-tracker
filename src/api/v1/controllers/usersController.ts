@@ -1,23 +1,19 @@
 import { Request, Response } from "express";
-import logger from "../../../utils/logger";
 import * as utility from '../../../utils/utility'
 import * as nordigenServices from '../services/nordigenService';
+import {getTokenFromBearer, makeErrorResponse, makeSuccessResponse} from "../../../utils/utility";
+import {getUserFromToken} from "../services/userService";
+import User from "../models/user";
 
 
 export async function getUserToken(req: Request, res: Response) {
     let tokenResponse = await nordigenServices.getToken();
 
     if (tokenResponse.status == 200) {
-        return res.status(200).json({
-            'status': "OK",
-            'data': tokenResponse.data
-        })
+        return makeSuccessResponse(res, 200, tokenResponse.data)
     }
-    
-    return res.status(400).json({
-        'status': "KO",
-        'data': tokenResponse.data.error
-    })
+
+    return makeErrorResponse(res, 400, tokenResponse.data.error)
 }
 
 export async function getInstitutions(req: Request, res: Response) {
@@ -25,14 +21,19 @@ export async function getInstitutions(req: Request, res: Response) {
     let response = await nordigenServices.getInstitutions(access_token);      
 
     if (response.status == 200) {
-        return res.status(200).json({
-            'status': 'OK',
-            'data': response.data
-        });
+        return makeSuccessResponse(res, 200, response.data);
     }
 
-    return res.status(400).json({
-        'status': 'KO',
-        'error': response.data.error
-    }); 
+    return makeErrorResponse(res, 400, response.data.error)
+}
+
+export async function me(req: Request, res: Response) {
+    const accessToken: string = getTokenFromBearer(req.headers.authorization);
+
+    const user: User = await getUserFromToken(accessToken)
+
+    if (user == null) {
+        return makeErrorResponse(res, 404, "User not found");
+    }
+    return makeSuccessResponse(res, 200, user);
 }

@@ -1,6 +1,5 @@
 import { Schema, model, connect } from 'mongoose';
 
-// 1. Create an interface representing a document in MongoDB.
 interface Institution {
   id: string;
   name: string;
@@ -10,7 +9,6 @@ interface Institution {
   logo: string;
 }
 
-// 2. Create a Schema corresponding to the document interface.
 const institutionSchema = new Schema<Institution>({
     id: { type: String, required: true },
     name: { type: String, required: true },
