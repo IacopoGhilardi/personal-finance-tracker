@@ -10,6 +10,14 @@ export async function getUserFromToken(token: string): Promise<User> {
     return await User.findById(userId).exec();
 }
 
-// export async function getUserFromId(id: string) {
-//     return await User.findById(id).exec()
-// }
+export async function getUserCopyFromToken(token: string) {
+    const data = getDataFromToken(token)
+    const uuid = data['uuid'];
+    const userId: string = decryptReversibleUuid(uuid);
+
+    return await User.findById(userId).lean().exec();
+}
+
+export async function createNewUser() {
+
+}

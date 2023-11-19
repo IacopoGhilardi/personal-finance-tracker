@@ -1,7 +1,7 @@
 import { Schema, model, Types } from 'mongoose';
 import bcrypt from 'bcrypt';
+import {Roles} from "../../../enums/roles";
 
-// 1. Create an interface representing a document in MongoDB.
 interface User {
 	name: string;
 	surname: string;
@@ -15,28 +15,33 @@ interface User {
 	createdAt: string;
 	updatedAt: string;
 	preferences: object;
+	roles: Types.Array<string>;
 	accounts: Types.Array<object>;
 }
 
-// 2. Create a Schema corresponding to the document interface.
 const userSchema = new Schema<User>({
 	name: String,
 	surname: String,
 	email: String,
-	password: String,
+	password: {
+		type: String,
+		select: false
+	},
 	fiscal_code: String,
 	born_date: String,
 	city: String,
 	cap: String,
 	address: String,
-	createdAt: String,
-	updatedAt: String,
 	preferences: Object,
+	roles: Array,
 	accounts: Array
+}, {
+	timestamps: true
 });
 
 interface UserDocument extends Document, User {
 	comparePassword(candidatePassword: string): Promise<boolean>;
+	isAdmin(): boolean;
   }
 
 userSchema.pre('save', async function (next) {
@@ -62,6 +67,11 @@ userSchema.methods.comparePassword = async function (candidatePassword: string) 
 	  throw error;
 	}
   };
+
+userSchema.methods.isAdmin = function (): boolean {
+	const user = this;
+	return user.roles.indexOf(Roles.ADMIN) != -1;
+}
 
 const User = model<UserDocument>('User', userSchema);
 

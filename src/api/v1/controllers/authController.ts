@@ -3,16 +3,15 @@ import { NextFunction, Request, Response } from 'express';
 import passport from "../../../config/passport";
 import jwt from 'jsonwebtoken';
 import config from 'config'
-import {makeErrorResponse} from "../../../utils/utility";
+import {makeErrorResponse, makeSuccessResponse} from "../../../utils/utility";
 import {encryptResourceId} from "../../../utils/tokenUtils";
+import logger from "../../../utils/logger";
+import * as authService from "../services/authService";
 
 export async function login(req: Request, res: Response, next: NextFunction): Promise<void> {
     passport.authenticate('local', { session: false }, (err: any, user: any) => {
         if (err || !user) {
-          return res.status(401).json({
-            status: 'KO',
-            error: 'Invalid email or password' 
-          });
+            return makeErrorResponse(res, 401, "Invalid email or password");
         }
     
         req.login(user, { session: false }, async (loginErr) => {
@@ -25,10 +24,7 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
           }
 
           const jwtToken: string = jwt.sign(token, config.get('auth.secret'), { expiresIn: config.get('auth.expiration_time') });
-          return res.json({
-            status: 'OK',
-            token: jwtToken
-          });
+          return makeSuccessResponse(res, 200, jwtToken);
         });
       })(req, res, next);
 }
@@ -36,26 +32,14 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
 export async function register(req: Request, res: Response) {  
     const { email, password } = req.body;
     try {
-      const userAlreadyExist = await User.findOne({ email: email }).lean().exec();
-
-      if (userAlreadyExist != null) {
-          return res.json({
-            status: 'KO',
-            error: 'User already registered'
-          });
-      }      
-
-      const user = new User({ email, password });
-      await user.save();
-      return res.json({
-        status: 'OK',
-        message: 'User registered successfully' 
-      });
+        await authService.registerNewUser(email, password);
+        return makeSuccessResponse(res, 200, 'User registered successfully');
     } catch (error) {
-      return res.status(500).json({
-        status: 'KO',
-        error: 'An error occurred while registering the user' 
-      });
+        logger.error("Error registering user", error);
+        if (error === 'User already exists') {
+            return makeErrorResponse(res, 400, 'User already registered' );
+        }
+            return makeErrorResponse(res, 500, 'Error registering user' );
     }
 }
 

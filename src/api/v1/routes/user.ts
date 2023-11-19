@@ -7,13 +7,13 @@ import { authenticateJWT } from '../../../middleware/authMiddleware';
 router.post("/login", authController.login);
 router.post("/register", authController.register);
 router.post("/reset-password", authController.resetPassword);
-router.get("/bank-token", authenticateJWT, usersController.getUserToken);
+router.get("/bank-token", authenticateJWT, usersController.getUserBankToken);
 
-//CRUD utente
 router.get("/me", authenticateJWT, usersController.me);
-router.post("/", usersController.me);
-router.patch("/", usersController.me);
-router.delete("/", usersController.me);
+router.get("/{id}", authenticateJWT, usersController.me);
+router.post("/", authenticateJWT, usersController.create);
+router.patch("/{id}", authenticateJWT, usersController.edit);
+router.delete("/", authenticateJWT, usersController.me);
 
 
 export default router;

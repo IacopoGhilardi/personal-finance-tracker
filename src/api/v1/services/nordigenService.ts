@@ -1,32 +1,25 @@
 import config from 'config';
-import axios, { AxiosResponse } from 'axios'
-import { response } from 'express';
+import axios, {AxiosResponse} from 'axios'
 import {JwtFromRequestFunction} from "passport-jwt";
 
 export async function getToken(): Promise<AxiosResponse<any, any>> {
-    
-    let response = await axios.post(`${config.get('nordigen.base_url')}/token/new/`, {
-        'secret_key' : config.get('nordigen.secret_key'),
-        'secret_id': config.get('nordigen.secret_id')
-    })
-
-    return response;
+    return await axios.post(`${config.get('bank_service.base_url')}/token/new/`, {
+        'secret_key': config.get('bank_service.secret_key'),
+        'secret_id': config.get('bank_service.secret_id')
+    });
 }
 
 export async function getInstitutions(access_token: JwtFromRequestFunction): Promise<any> {
-    
-    let response = await axios.get(`${config.get('nordigen.base_url')}/institutions/?country=it`, {
+    return await axios.get(`${config.get('bank_service.base_url')}/institutions/?country=it`, {
         headers: {
             "accept": "application/json",
             "Authorization": `Bearer ${access_token}`
         }
-    })
-
-    return response;
+    });
 }
 
 export async function createUserAgreement(access_token: string, institution: object): Promise<any> {
-    let response = await axios.post(`${config.get('nordigen.base_url')}/agreements/enduser`, {
+    let response = await axios.post(`${config.get('bank_service.base_url')}/agreements/enduser`, {
         headers: {
             "accept": "application/json",
             "Authorization": `Bearer ${access_token}`

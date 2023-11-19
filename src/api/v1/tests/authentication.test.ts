@@ -1,62 +1,53 @@
-import { closeConneciton, initConnection } from "../../../config/database";
-import * as server from "../../../config/server";
-import { request } from 'supertest';
+import request from 'supertest';
+import {getServer} from "../../../config/server";
 import User from "../models/user";
+const app = getServer();
 
+describe('Auth Controller', () => {
+  var testUser;
 
-beforeAll(async () => {
-  await initConnection(1);
-  server.initServer();
-});
-
-
-describe("Test authentication routes", () => {
-
-  //Register
-  test("it should register new user", async () => {
-
-    const newUser = new User({
-      email: "test@test.com",
-      password: "changeMe!"
+  beforeAll(async () => {
+    // Create a test user for login testing
+    testUser = await User.create({
+      email: 'test@example.com',
+      password: 'password123',
     });
-
-    const registerResponse = await request(server.getServer())
-    .post('/api/v1/users/register')
-    .send(newUser)
-    .expect(200)
-
-    expect(registerResponse.status).toBe("OK")
-
-    //On the second should be already registered
-    const secondRegisterResponse = await request(server.getServer())
-    .post('/api/v1/users/register')
-    .send(newUser)
-    .expect(200)
-
-    expect(secondRegisterResponse.status).toBe("KO")
   });
 
-
-  //Login
-  test("it should login the registered user", async () => {
-    const userCredentials = {
-      email: "test@test.com",
-      password: "changeMe!"
+  it('should login with valid credentials', async () => {
+    const validUser = {
+      email: 'test@example.com',
+      password: 'password123',
     };
 
-    const loginResponse = await request(server.getServer())
-      .post('/api/v1/login')
-      .send(userCredentials)
-      .expect(200);
+    const response = await request(app)
+        .post('/login')
+        .send(validUser)
+        .expect('Content-Type', /json/)
+        .expect(200);
 
-      expect(loginResponse.status).toBe("OK")
-      expect(loginResponse.token).not.toBe(null)
+    const { token } = response.body;
+    expect(token).toBeDefined();
   });
 
-});
+  it('should register a new user', async () => {
+    const newUser = {
+      email: 'newuser@example.com',
+      password: 'newpassword123',
+    };
 
+    const response = await request(app)
+        .post('/register')
+        .send(newUser)
+        .expect('Content-Type', /json/)
+        .expect(200);
 
-afterAll(() => {
-  closeConneciton();
-  server.closeServerConnection();
+    expect(response.body.status).toEqual('OK');
+  });
+
+  afterAll(async () => {
+    if (testUser) {
+      await User.findByIdAndDelete(testUser._id);
+    }
+  });
 });
