@@ -2,7 +2,7 @@ import User from "../models/user";
 import {decryptReversibleUuid, getDataFromToken} from "../../../utils/tokenUtils";
 
 
-export async function getUserFromToken(token: string): Promise<User> {
+export async function getUserFromToken(token: string) {
     const data = getDataFromToken(token)
     const uuid = data['uuid'];
     const userId: string = decryptReversibleUuid(uuid);

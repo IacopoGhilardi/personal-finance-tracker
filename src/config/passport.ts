@@ -15,13 +15,21 @@ passport.use(
     },
     async (email, password, done) => {
       try {
+          console.log("Local strategy")
         const user = await User.findOne({ email: email });
 
+          console.log("User", user)
+
         if (!user) {
+            console.log("Arrivi qua?")
           return done(null, false, { message: 'Invalid email or password' });
         }
 
+          console.log("Userddddd")
+
         const isPasswordValid = await user.comparePassword(password);
+
+          console.log("isValidPassword", isPasswordValid)
 
         if (!isPasswordValid) {
           return done(null, false, { message: 'Invalid email or password' });

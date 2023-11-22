@@ -1,6 +1,7 @@
 import { Schema, model, Types } from 'mongoose';
 import bcrypt from 'bcrypt';
 import {Roles} from "../../../enums/roles";
+import logger from "../../../utils/logger";
 
 interface User {
 	name: string;
@@ -23,10 +24,7 @@ const userSchema = new Schema<User>({
 	name: String,
 	surname: String,
 	email: String,
-	password: {
-		type: String,
-		select: false
-	},
+	password: String,
 	fiscal_code: String,
 	born_date: String,
 	city: String,
@@ -48,8 +46,7 @@ userSchema.pre('save', async function (next) {
 	const user = this;
 	if (user.isModified('password')) {
 	  try {
-		const hashedPassword = await bcrypt.hash(user.password, 10); // 10 is the number of salt rounds
-		user.password = hashedPassword;
+		user.password = await bcrypt.hash(user.password, 10);
 	  } catch (error) {
 		return next(error);
 	  }
@@ -59,18 +56,16 @@ userSchema.pre('save', async function (next) {
 
 
 userSchema.methods.comparePassword = async function (candidatePassword: string) {
-	const user = this;
 	try {
-	  const isMatch = await bcrypt.compare(candidatePassword, user.password);
-	  return isMatch;
+		return await bcrypt.compare(candidatePassword, this.password);
 	} catch (error) {
+		logger.info("Error comparing passwords", error);
 	  throw error;
 	}
-  };
+ };
 
 userSchema.methods.isAdmin = function (): boolean {
-	const user = this;
-	return user.roles.indexOf(Roles.ADMIN) != -1;
+	return this.roles.includes(Roles.ADMIN);
 }
 
 const User = model<UserDocument>('User', userSchema);

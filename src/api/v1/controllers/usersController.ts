@@ -40,7 +40,12 @@ export async function me(req: Request, res: Response) {
 
 export async function create(req: Request, res: Response) {
     try {
+        const accessToken: string = getTokenFromBearer(req.headers.authorization);
+        const editor = await getUserFromToken(accessToken);
 
+        if (!editor || !editor.isAdmin()) {
+            return makeErrorResponse(res, 401, "User unauthorized")
+        }
 
         const userData: Partial<User> = req.body;
         const newUser = new User(userData);
@@ -55,16 +60,22 @@ export async function create(req: Request, res: Response) {
 
 export async function edit(req: Request, res: Response) {
     try {
+        let userId: any = null;
         const accessToken: string = getTokenFromBearer(req.headers.authorization);
-        const editor: User | null = await getUserFromToken(accessToken);
+        const editor = await getUserFromToken(accessToken);
 
         if (!editor) {
             return makeErrorResponse(res, 401, "User unauthorized")
         }
-        //Todo: check if is admin or if is the user himself to editing the profile
+
+        if (editor.isAdmin()) {
+            userId = req.body.id ? req.body.id : editor.id;
+        } else {
+            userId = editor.id;
+        }
 
         const userToUpdate: Partial<User> = req.body;
-        const user = await User.findById(req.body.id).exec();
+        const user = await User.findById(userId).exec();
 
         if (!user) {
             return makeErrorResponse(res, 404, 'User not found');

@@ -12,7 +12,7 @@ router.get("/bank-token", authenticateJWT, usersController.getUserBankToken);
 router.get("/me", authenticateJWT, usersController.me);
 router.get("/{id}", authenticateJWT, usersController.me);
 router.post("/", authenticateJWT, usersController.create);
-router.patch("/{id}", authenticateJWT, usersController.edit);
+router.patch("/", authenticateJWT, usersController.edit);
 router.delete("/", authenticateJWT, usersController.me);
 
 
